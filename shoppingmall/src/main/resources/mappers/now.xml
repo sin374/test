@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	작성자: 최황혁
+	DB테스트를 위해 만든 xml파일
+
+	mybatis mapper 파일임을 명시하는 코드작성.
+	MyBatis의 경우 XML Mapper는 상단의 파일에서 사용하는 태그들에 
+	대한 정보가 기록된DTD를 추가해야함.
+	
+	http://www.mybatis.org/mybatis-3/ko/getting-started.html 사이트로 가서
+	DTD 복사해오기
+ -->
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace : 매핑을 시키고자 하는 패키지명을 포함한 BDAO인터페이스 경로 지정 -->
+<mapper namespace="com.shoppingmall.DAO.nowInter">
+
+	<!-- 
+		id : 1. 해당 SQL구문을 식별할 수 있는 고유값
+			2. BDAO인터페이스의 list()메소드의 이름을 id값으로 지정 해야함.
+		
+		resultType : 1. 필수속성, select의 결과로 반환된 resultSet이 매핑이 될 DTO객체의 클래스 타입 지정
+					 2. BDAO인터페이스에 있는 list()메소드의 리턴타입을 작성한다.
+					 	DB로부터 검색한 결과를 담은 BVO객체(DTO)를 리턴하기 때문에...
+					 	com.mybatis.VO.BVO			
+	-->
+
+ 	
+ 	<select id="now" resultType="com.shoppingmall.VO.nowVO">
+ 		select now() as now
+ 	</select>
+ 	
+ 	<!-- 
+ 	<insert id="writeOk">
+ 		insert into mybatis_bbs(bld, bName, bContent) values(1, #{param1}, #{param2})
+ 	
+ 		
+ 			
+ 			insert into mybatis_bbs(bld, bName, bContent) values(seq_mybatis_bbs.nextval, #{param1}, #{param2})
+ 			
+ 			preparedStatement에서 사용하던 ?값 대신에  #{param1}, #{param2}와 같이 작성해야한다.
+ 			
+ 			MyBatis의 경우 기본적으로 preparedStatement객체를 이용해서 처리된다. 
+ 			
+ 			개발자가 PreparedStatement에 들어가는 파라미터를 사용할때는 #{} 기호를 사용하여 처리 된다. 
+ 			
+ 			#{} : DB에 필드의 타입과 insert구문으로 전달할 데이터의 타입이 다를경우? DB의 필드 타입으로 데이터를 insert한다.
+ 		 
+ 	
+ 	</insert>
+ 	
+ 	
+ 	
+ 	<delete id="delete">
+ 		delete from mybatis_bbs where bld=#{param1}
+ 	</delete>
+ 	
+ 	 -->
+</mapper>
+
+<!-- 
+	Mybatis는 sql쿼리 구문을 xml형식의 파일로 분리 시켜 저장 관리 할 수 있고,
+	JAVA소스에서 XML태그의 id를 호출하여 개발의 편리함을 제공함
+	
+	Mybatis는 xml형식의 쿼리 파일을 저장 및 호출하는 역할을 하는 내부적으로 처리하는 것이다. 
+	JDBC만으로 DB쿼리를 작성하면 java소스와 쿼리소스가 겹쳐서 관리하기가 어렵다.
+	
+	mapper에 등록된 쿼리를 자바코드상에서 등록된 mapper의 id만으로 호출할 수 있으니 엄청 편리하다.
+	
+	resultMap : select문에서 resultType대신 resultMap을 사용할 수 있다.
+				검색 쿼리가 단순 테이블 조회가 아닌 join구문을 포함할때는 하나의 자바 객체로 매핑할 수 있다. 
+				이럴때 resultMap을 사용한다. 
+
+
+ -->

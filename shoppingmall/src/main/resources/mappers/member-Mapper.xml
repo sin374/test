@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	작성자: 이신희
+
+	멤버에 대한 sql xml파일이다.
+ -->
+
+<!-- namespace : 매핑을 시키고자 하는 패키지명을 포함한 DBAO인터페이스 경로 지정 -->
+<mapper namespace="com.shoppingmall.mapper.MemberMapper">
+
+	<!-- resultSet : 반환될 클래스 타입 지정  -->
+	<select id="idcheck" parameterType="String" resultType="int">
+		select count(*) from member where id=#{id}<!--아이디 중복확인 -->
+	</select>
+	
+	<insert id="insertMember" >
+		<!-- 회원가입 회원정보 insert	 -->
+		<![CDATA[
+		insert into member(id, pw, email, name, phone, postcode,addr1,addr2, sex, birthdate, grade, regdate, point, emailState) 
+		values(#{id},#{pw},#{email},#{name},#{phone},#{postcode},#{addr1}, #{addr2},#{sex},STR_TO_DATE(#{birth},'%Y-%m-%d'), '브론즈', now(), 0,0)
+		]]>
+	</insert>
+	
+	<update id="emailStateUpdate">
+		<!-- 이메일 인증이 완료되면 emailState 상태가 1로 변경 -->
+		update member set emailState=1 where id=#{id}
+	</update>
+	
+	<select id="readMember" resultType="com.shoppingmall.VO.MemberVO" >
+		<!-- 로그인 되어있는 회원의 회원정보 가져오기 -->
+		select *
+		from member
+		where id=#{id}
+	</select>
+	
+	<select id="OldpwCheck" resultType="int">
+		select count(*) from member where id=#{id} and pw=#{pw}
+	</select>
+	
+	<select id="CheckEmail" resultType="int" parameterType="String" >
+		<!-- 회원정보에서 이메일 수정시 해당 id와 입력한 email에 해당하는 정보가 db에 있는지 검색 -->
+		select count(*) from member where id=#{id} and email=#{email}
+	</select>
+	
+	<update id="emailUpdate">
+		<!-- 이메일 update -->
+		update member set emailState=0, email=#{email} where id=#{id}
+	</update>
+	
+	<select id="emailStateCheck" resultType="int">
+		<!-- 회원정보 수정 전 emailState값 확인 -->
+		select emailState from member where id = #{id}
+	</select>
+	
+	<update id="updateMember">
+		<!-- 회원정보수정 -->
+		update member set pw=#{pw}, email=#{email}, name=#{name}, phone=#{phone}, postcode=#{postcode},addr1=#{addr1},addr2=#{addr2}, sex=#{sex}, birthdate=STR_TO_DATE(#{birth},'%Y-%m-%d')
+		where id=#{id}
+	</update>
+	
+	<select id="pwCK" resultType="int">
+		<!-- 아이디와 비밀번호가 일치하는지 확인 -->
+		select count(*) from member where id=#{id} and pw=#{pw}
+	</select>
+	
+	<delete id="deleteMember">
+		<!-- 회원정보 제거 -->
+		delete from member where id=#{id}
+	</delete>
+
+</mapper>

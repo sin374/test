@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	
+	<!-- DataSource커넥션풀 객체생성 -->
+	<bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName"	value="com.mysql.jdbc.Driver"/>
+		<property name="url" value="jdbc:mysql://localhost:3306/shoppingmall?serverTimezone=UTC&amp;useSSL=false&amp;allowMultiQueries=true"/>
+		<property name="username" value="jspid"/>
+		<property name="password" value="jsppass"/>
+	</bean>
+	
+	<!--  JdbcTemplate객체생성, DataSource(커넥션 풀)을 담아둔다. -->
+	<bean name="template" class="org.springframework.jdbc.core.JdbcTemplate"> <!-- 태호행님 은 id="jdbcTemplate"라고 적으심. -->
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+		
+	<!-- jdbcTemplate객체를 다시 ~ bbsDao객체에 등록 ,,,,,,,,,,, DAO를 만들면 이런거 만들어줘야하는듯.?
+	<bean name="bbsdao" class="com.mybatis.DAO.BbsDAO">
+		<property name="template" ref="template"/>
+	</bean>		-->
+		
+	
+	
+	<!-- MyBatis프레임웤에 대한 설정	 -->
+	
+		<!-- SqlSessionFatoryBean : dataSource & Mapper.xml를 포함 -->
+		<bean id="sqlSessionFactoryBean"
+					class="org.mybatis.spring.SqlSessionFactoryBean">
+			
+			<property name="dataSource" ref="dataSource"/> <!-- 데이터소스 추가 -->
+			<property name="mapperLocations" value="classpath:mappers/**/*.xml"></property><!-- 팀장이바꾼거 -->
+			
+			<!-- <property name="mapperLocations" value="classpath:com/shoppingmall/service/*.xml"/> --> <!-- 박성호씨꺼 -->
+			<!--  <property name="mapperLocations" value="classpath:com/shoppingmall/mapper/*.xml"/>-->  <!-- 팀장 매퍼 위치 추가 -->
+			<!--  <property name="mapperLocations" value="classpath*:mappers/**/*Mapper.xml"></property>--> <!-- 신희씨 mapper-->
+			<!--  <property name="mapperLocations" value="classpath:com/mybatis/aaa/model/*.xml"/>  태호행님 mapper-->
+		</bean>
+	
+	
+	<!-- MyBatis-spring 프레임웤에 대한 설정 시작 -->
+	
+		<!-- SqlSessionTemplate은 factory를 포함해야한다. -->
+		<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate"> <!-- 태호행님은 id=sqlSession라고 해두심. -->
+			<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactoryBean"/> <!-- 팩토리추가 -->
+		</bean>
+		<!-- 메일 보내기 (SEND) -->
+		<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+			<property name="host"  value="smtp.gmail.com" />
+			<property name="port" value="587"/>
+			<property name="username" value="hhyeok10266@gmail.com"/>
+			<property name="password" value="xlavmfhwprxm11!" />
+		
+			<!-- SMTP -->
+			<property name="javaMailProperties">
+				<props>
+					<prop key="mail.transport.protocol">smtp</prop>
+					<prop key="mail.smtp.auth">true</prop>
+					<prop key="mail.smtp.starttls.enable">true</prop>
+					<prop key="mail.debug">true</prop>
+				</props>
+			</property>
+		</bean>
+</beans>
+
+
+
+
+
+
+<!-- 팀장이한 DataSource 커넥션풀 객체 생성 
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+ 			<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        	<property name="url" value="jdbc:mysql://localhost:3306/jspbeginner" />  뒤에꺼 주석처리 "jdbc:mysql://localhost:3306/jspbeginner?serverTimezone=UTC" 
+        	<property name="username" value="jspid" />
+       	 	<property name="password" value="jsppass" />
+ 	</bean> -->
+
+
+	<!-- SqlSessionTemplate객체설정!!
+			참고: SqlSessionTemplate객체는? SqlSessionFactoryBean객체를 포함해야한다.
+			
+			그 이유는-> SqlSessionTemplate객체가 Spring의 DAO와 연결을 시켜주는 역할을 하기 때문!!
+				또한 SqlSessionFactoryBean객체는 SQL구문을 DB에 전달하여 실행해야 하기 때문..
+		-->
+
+	<!-- 참고: SqlSessionTemplate는 DAO에 주입 시켜야한다. 어노테이션 기호를 이용하여 주입해주자. -->	
+	
+	<!-- 
+		보충 설명!!!!!!!!!!!!!!!!!!!!
+		
+		SqlSessionFactory내부에는 DB연결 작업을 하는 DataSource가 들어 있기 때문에..
+		SqlSessionFactory는 DB연결을 간접적으로 함.
+		
+		또한~
+		
+		sqlSessionFactory내부에는 DB에 명령을 실행할 SQL문장을 담고 있는 Mapper.xml가 들어 있기 때문에..
+		SqlSessionFactory는  DB에 SQL문장명령을 실행할 수 있는 객체이다.
+		
+		또한~
+		
+		SqlSessionTemplate객체는 SqlSessionFactory를 포함하게 된다. 
+		
+		또한 
+		
+		SqlSessionTemplate객체를 DAO에 주입시켜서 
+		Spring영역과 MyBatis영역을 서로 연결하여 DB작업을 하게 된다. 
+		
+		sqlSessionTemplate클래스에 대하여..
+		- DAO의 작업에서 가장 번거로운 작업은 데이터베이스와 연결을 맺고, 작업이 완료된 후에 연결을 해제하는 작업이다.
+		
+		다행 스럽게도 mybatis-spring 프레임 웤에 이것을 처리할 수 있는 SqlSessionTemplate이라는 클래스를 제공하므로
+		이 클래스를 이용하면 개발자들이 직접 연결을 맺고 종료를 하는 작업을 줄일 수 있습니다. 
+		
+		-SqlSessionTemplate이라는 클래스는 SqlSession이라는 인터페이스를 구현한 클래스이다. ~
+		
+		주석오지게 길다 -_-;
+	 -->	
+		
+
+
+
